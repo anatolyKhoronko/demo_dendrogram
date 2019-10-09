@@ -1,6 +1,19 @@
 const width = 1200;
 const height = 1000;
 
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
+const { cluster: mapNodeToCluster }  = clustersData;
+const uniqueClusters = [...new Set(Object.values(mapNodeToCluster))];
+const mapClusterToColor = uniqueClusters.reduce((acc, cluster) => ({...acc, [cluster]: getRandomColor()}), {});
+
 const cluster = d3.layout.cluster().size([height, width]);
 
 const svg = d3.select('body').append('svg')
@@ -46,6 +59,12 @@ svg.selectAll('.link')
   .data(links)
   .enter().append('path')
   .attr('class', 'link')
+  .attr('style', d =>  {
+    const nodes = d.source.name.split('-');
+    const firstNode = nodes[0];
+    const color = mapClusterToColor[mapNodeToCluster[firstNode]];
+    return `stroke: ${color}`
+  })
   .attr('d', elbow);
 
 const node = svg.selectAll('.node')
